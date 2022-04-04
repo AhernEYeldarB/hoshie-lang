@@ -320,6 +320,7 @@ ${row.returnExpression ? "return" : ""} ${this.generate(row.returnExpression)};`
 }
 
 export function generate(hlFile: HLFileScope) {
+    if(!hlFile.allActions().length) { return; }
     const jsWriter = new JSWriter();
     hlFile.allActions().forEach(row => {
         jsWriter.writeAction(row);

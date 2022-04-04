@@ -4,6 +4,7 @@ import * as yargs from "yargs";
 import { HLFileScope } from "./hlcc/cst/scopes/file";
 import { generate, outPath } from "./hlcc/codeGen/js";
 import * as childProcess from "child_process";
+import { fstat, existsSync, unlinkSync } from "fs";
 
 function runScript(scriptPath, callback) {
 
@@ -49,6 +50,11 @@ function logErrors(hFile: HLFileScope) {
     });
 }
 
+function cleanExistingFile(filePath: string) {
+    if(!existsSync(filePath)) return;
+    unlinkSync(filePath);
+}
+
 switch (cmd) {
     case "check":
         console.log(`Syntax checking "${argv.file}"\n`);
@@ -67,9 +73,13 @@ switch (cmd) {
         logErrors(hlFile);
         console.log(`Compiled "${argv.file}"`);
         generate(hlFile);
-        if (!!!hlFile.text) { break; }
+        const filePath = outPath(argv.file);
+        if (!!!hlFile.text) { 
+            cleanExistingFile(filePath);
+            break;
+        }
         console.log(`Running "${argv.file}"\n`);
-        runScript(outPath(argv.file), function (err) {
+        runScript(filePath, function (err) {
             if (err) throw err;
             console.log(`\nFinished "${argv.file}"`);
         });
