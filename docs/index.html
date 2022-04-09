@@ -1,14 +1,32 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset='utf-8'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <title>Hoshie Lang Demo</title>
   <meta name='viewport' content='width=device-width, initial-scale=1'>
   <link rel='stylesheet' type='text/css' media='screen' href='pages.css'>
-  <script src='pages.js'></script>
+  <script type="importmap">
+    {
+        "imports": {
+            "@hpcc-js/observable-md": "https://cdn.skypack.dev/@hpcc-js/observable-md",
+            "@hpcc-js/codemirror": "https://cdn.skypack.dev/@hpcc-js/codemirror",
+            "lit": "https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js"
+        }
+    }
+</script>
+  <script type="module" src='pages.js'></script>
 </head>
+
 <body>
   <p>Hoshie Lang</p>
+  <article class="container">
+    <section id="editor">
+    </section>
+    <section id="render">
+    </section>
+  </article>
 </body>
+
 </html>
