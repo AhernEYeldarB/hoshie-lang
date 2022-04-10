@@ -44,8 +44,37 @@ var app = new Observable()
 .target("render")
 .showValues(true)
 .mode("omd")
-.text("")
-;
+.text(
+  " \n" +
+  "``` " +
+  "df = require(\"@hpcc-js/dataflow\"); \n"+
+  "add = (a, b) => { \n" +
+  "  return a + b; \n" +
+  "} \n" +
+  "add2 = (a, b) => { \n" +
+  "  return a + b; \n" +
+  "} \n" +
+  "add3 = (a, b) => { \n" +
+  "  var tmpA = a \n" +
+  "  var tmpB = b \n" +
+  "  var tmp = tmpA + tmpB \n" +
+  "  return tmp \n" +
+  "} \n" +
+  "join = (a, b) => { \n" +
+  "  a = a !== undefined ? a : 'Hello' \n" +
+  "  b = b !== undefined ? b : 'World' \n" +
+  "  return a + ' ' + b \n" +
+  "} \n" +
+  "add(1, 2) \n" +
+  "add2(1, 2) \n" +
+  "add3(1, 2) \n" +
+  "join() \n" +
+  "join(\"Goodbye\") \n" +
+  "join(undefined, 'Earth') \n" +
+  "join('Goodbye', 'Earth') \n" +
+  "\n" +
+  "``` \n"
+);
 
 // Utils
 const doResize = () => {
