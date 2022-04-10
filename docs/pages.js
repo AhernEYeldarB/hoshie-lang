@@ -1,5 +1,5 @@
 import { Observable } from "@hpcc-js/observable-md";
-// import { LitElement, html } from "lit";
+import { LitElement, html } from "lit";
 import { ECLEditor } from "@hpcc-js/codemirror";
 
 // Init initial state
@@ -56,6 +56,30 @@ const doResize = () => {
       ;
   }
 };
+
+// Components
+class ErrorTab extends LitElement {
+
+  constructor() {
+    super();  
+    this.app = app;
+    this._timerInterval = setInterval(() => this.requestUpdate(), 2000);
+  }
+
+  render() {
+    return html`
+    <table>
+      ${this.app._errors.map((error) => { return error.severity === "error" ? html`
+      <tr>
+        <td>${error.name}</td>
+        <td>${error.message}</td>
+      </tr>
+      ` : ""; })}
+    </table>
+    `;
+  }
+}
+customElements.define("error-tab", ErrorTab);
 
 // Main
 doResize();
