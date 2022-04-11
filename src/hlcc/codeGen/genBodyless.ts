@@ -307,4 +307,4 @@ export function generate(text: string ) {
     return jsWriter.output();
 }
 
-window.generate = generate;
+(<any>window).generate = generate;
