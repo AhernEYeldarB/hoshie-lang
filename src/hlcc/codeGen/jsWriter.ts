@@ -1,7 +1,6 @@
 import { AdditiveExpression, ArrayExpression, ArrowBody, ArrowParamater, DataExpression, EqualityExpression, FunctionCallExpression, IdentifierExpression, LogicalExpression, MultiplicativeExpression, NotExpression, NumericExpression, RelationalExpression, StringExpression, UnaryMinusExpression } from "../cst/expression";
-import { CountFunction, FilterFunction, FirstNFunction, GenerateFunction, GroupCountFunction, GroupFunction, LengthFunction, PipelineFunction, RandomFunction, SortFunction } from "../cst/function";
+import { CountFunction, FilterFunction, FirstNFunction, GenerateFunction, GroupCountFunction, GroupFunction, LengthFunction, PipelineFunction, RandomFunction, ReadJsonFunction, SortFunction, WriteJsonFunction } from "../cst/function";
 import { HLScope, resolveRef } from "../cst/scope";
-import { HLFileScope } from "../cst/scopes/file";
 import { HLFunctionScope } from "../cst/scopes/function";
 import { HLStringScope } from "../cst/scopes/string";
 import { RowType } from "../cst/types";
@@ -9,7 +8,7 @@ import { RowType } from "../cst/types";
 type Declaration = { [id: string]: string };
 type FileContent = { [path: string]: { declarations: Declaration, actions: string[] } };
 
-class JSWriter {
+export class JSWriter {
     fileContent: FileContent = {};
     hasOutput: boolean = false;
 
@@ -44,6 +43,8 @@ ${this.outputDecl(hoPath)}
 
 ${this.outputBuffer(hoPath)}
 `;
+            // fs.mkdirSync(path.dirname(jsPath), { recursive: true });
+            // fs.writeFileSync(jsPath, content);
             retVal.push(content);
         }
         return retVal.join("\n");
@@ -67,6 +68,8 @@ ${this.outputBuffer(hoPath)}
         if (text !== undefined) {
             if (ref?.func instanceof PipelineFunction) {
                 this.append(`JSON.stringify([...${text}], undefined, 2);`, row.scope.path);
+            } else if (row instanceof WriteJsonFunction) {
+                this.append(`${text};`, row.scope.path);
             } else if (ref?.isActivity) {
                 this.append(`JSON.stringify(${text}.peek(), undefined, 2);`, row.scope.path);
             } else if (ref?.isSensor) {
@@ -288,14 +291,3 @@ ${row.returnExpression ? "return" : ""} ${this.generate(row.returnExpression)};`
         return `df.variance(${this.generate(row.expression)})`;
     }
 }
-
-function generate(text: string ) {
-    const hlFile = new HLStringScope("", "", text);
-    const jsWriter = new JSWriter();
-    hlFile.allActions().forEach(row => {
-        jsWriter.writeAction(row);
-    });
-    return jsWriter.output();
-}
-
-(<any>window).generate = generate;
