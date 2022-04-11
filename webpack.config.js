@@ -1,7 +1,7 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./src/hlcc/codeGen/genBodyless.ts",
+  entry: "./src/hlcc/codeGen/indexGen.ts",
   devtool: "inline-source-map",
   mode: "development",
   module: {

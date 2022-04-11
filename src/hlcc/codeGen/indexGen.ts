@@ -3,6 +3,7 @@ import { CountFunction, FilterFunction, FirstNFunction, GenerateFunction, GroupC
 import { HLScope, resolveRef } from "../cst/scope";
 import { HLFileScope } from "../cst/scopes/file";
 import { HLFunctionScope } from "../cst/scopes/function";
+import { HLStringScope } from "../cst/scopes/string";
 import { RowType } from "../cst/types";
 
 type Declaration = { [id: string]: string };
@@ -104,7 +105,7 @@ ${this.outputBuffer(hoPath)}
     }
 
     IdentifierExpression(row: IdentifierExpression) {
-        if (row.scope instanceof HLFileScope) {
+        if (row.scope instanceof HLStringScope) {
             this.writeDecl(row.id, row.ref, row.scope);
         }
         return `${row.id}`;
@@ -298,8 +299,8 @@ ${row.returnExpression ? "return" : ""} ${this.generate(row.returnExpression)};`
     }
 }
 
-export function generate(text: string ) {
-    const hlFile = new HLFileScope("", "", text);
+function generate(text: string ) {
+    const hlFile = new HLStringScope("", "", text);
     const jsWriter = new JSWriter();
     hlFile.allActions().forEach(row => {
         jsWriter.writeAction(row);

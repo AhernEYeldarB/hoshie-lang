@@ -1,24 +1,18 @@
 import * as fs from "fs";
 import * as path from "path";
-import { parse, ParseResponse } from "../../parser";
-import { hlError, HLError, removeQuotes } from "../node";
-import { Alias, HLDeclaration } from "../declaration";
-import { HLScope, Range } from "../scope";
-import { HLFunctionScope } from "./function";
+import { parse } from "../../parser";
+import { HLError, removeQuotes } from "../node";
+import { Range } from "../scope";
 import { HLAction, Test } from "../action";
-import { TypeAlias, TypeDeclaration } from "../types";
+import { HLStringScope } from "./string";
 import { posix } from "../../../utils";
 
 export interface ImportedHLFile extends Range {
     file: HLFileScope;
 }
 
-export class HLFileScope extends HLScope {
-
-    protected _parsed: ParseResponse;
-
+export class HLFileScope extends HLStringScope {
     readonly importedFiles: ImportedHLFile[] = [];
-    readonly exports: { [id: string]: HLDeclaration | TypeDeclaration } = {};
 
     constructor(readonly label: string, readonly path: string, readonly text?: string) {
         super(label, path, text);
@@ -39,24 +33,7 @@ export class HLFileScope extends HLScope {
         }
     }
 
-    resolveScope(line: number, column: number) {
-        for (const key in this.declarations) {
-            const decl = this.declarations[key];
-            if (decl.expression instanceof HLFunctionScope && decl.expression.contains(line, column)) {
-                return decl.expression;
-            }
-        }
-        return this;
-    }
-
-    errors(): HLError[] {
-        return [
-            ...this._parsed.lexErrors.map(e => hlError(this.path, e)),
-            ...this._parsed.parseErrors.map(e => hlError(this.path, e)),
-            ...super.errors()
-        ];
-    }
-
+    // Getter overrides ---
     allErrors(): HLError[] {
         let retVal = this.errors();
         this.importedFiles.forEach(i => {
@@ -80,51 +57,7 @@ export class HLFileScope extends HLScope {
         });
         return retVal;
     }
-
-    //  Visitor overrides  ---
-
-    visitImportStatement(ctx) {
-        const children = super.visitImportStatement(ctx);
-        const [, importFrom] = children;
-        const [_decls, file]: [{ identifier: string, as: string, ctx }[], HLFileScope] = importFrom;
-        const decls = _decls.filter(item => typeof item !== "string");
-        decls?.forEach(row => {
-            const decl = file.exports[row.identifier];
-            if (decl) {
-                if (decl instanceof TypeDeclaration) {
-                    if (row.as) {
-                        this.appendType(row.ctx, row.as, new TypeAlias(row.ctx, this, row.as, decl));
-                    } else {
-                        this.appendType(row.ctx, row.identifier, decl);
-                    }
-                } else {
-                    if (row.as) {
-                        this.appendDeclaration(row.ctx, row.as, new Alias(row.ctx, this, row.as, decl));
-                    } else {
-                        this.appendDeclaration(row.ctx, row.identifier, decl);
-                    }
-                }
-            } else {
-                this.ctxError(row.ctx, `${row.identifier} not exported from ${file.path}`);
-            }
-        });
-        return importFrom;
-    }
-
-    visitModuleItems(ctx) {
-        const retVal = super.visitModuleItems(ctx);
-        return retVal.filter(row => !!row);
-    }
-
-    visitImportDeclaration(ctx): { identifier: string, as: string, ctx } {
-        const [id, , idAs] = ctx.children;
-
-        const identifier = id.getText?.() || id.identifier().getText();
-        const as = idAs?.identifier().getText();
-
-        return { identifier, as, ctx };
-    }
-
+    
     visitImportFrom(ctx) {
         const [] = super.visitImportFrom(ctx);
         const [, impStr] = ctx.children;
@@ -144,17 +77,5 @@ export class HLFileScope extends HLScope {
             return importHLFile;
         }
         return undefined;
-    }
-
-    visitExportDeclaration(ctx) {
-        const retVal = super.visitExportDeclaration(ctx);
-        const [, hlVar] = retVal;
-        this.exports[hlVar.id] = hlVar;
-        return retVal;
-    }
-
-    visitArrowFunctionExpression(ctx) {
-        const f = new HLFunctionScope(this.path, ctx, this);
-        return f;
     }
 }
