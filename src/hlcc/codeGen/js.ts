@@ -4,7 +4,7 @@ import { HLFileScope } from "../cst/scopes/file";
 import { JSWriter } from "./jsWriter";
 import { IdentifierExpression } from "../cst/expression";
 import { resolveRef } from "../cst/scope";
-import { WriteJsonFunction } from "../cst/function";
+import { PipelineFunction, WriteJsonFunction } from "../cst/function";
 
 export function outPath(inPath: string): string {
     const outPath = inPath.split(".");
@@ -51,7 +51,7 @@ ${this.outputBuffer(hoPath)}
         const text = this.generate(row);
         const ref = resolveRef(row);
         if (text !== undefined) {
-            if (ref?.func instanceof this.PipelineFunction) {
+            if (ref?.func instanceof PipelineFunction) {
                 this.append(`console.log(JSON.stringify([...${text}], undefined, 2));`, row.scope.path);
             } else if (row instanceof WriteJsonFunction) {
                 this.append(`${text};`, row.scope.path);
