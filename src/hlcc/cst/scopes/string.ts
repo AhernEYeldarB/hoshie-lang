@@ -1,11 +1,10 @@
 import { parse, ParseResponse } from "../../parser";
 import { hlError, HLError } from "../node";
 import { HLDeclaration } from "../declaration";
-import { HLScope } from "../scope";
+import { HLScope, resolveRef } from "../scope";
 import { HLFunctionScope } from "./function";
 import { HLAction, Test } from "../action";
 import { TypeDeclaration } from "../types";
-
 export class HLStringScope extends HLScope {
 
     protected _parsed: ParseResponse;
